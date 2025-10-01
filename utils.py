@@ -24,8 +24,10 @@ class TimeSeriesMLProcessor:
         """
         self.df = df.copy()
         self.feature_columns = [col for col in df.columns 
-                               if col not in ['animal', 'block', 'subblock', 'window_index', 
-                                            'condition', 'state', 'window_start_s', 'window_end_s']]
+                               if col not in ['species','animal', 'block', 'subblock', 'window_id', 'window_index', 
+                                              'expDate','probe', 'condition', 'state', 'window_start_s', 'window_end_s',
+                                             'raster_idx_start', 'raster_idx_end', 'behavior_idx_start', 'behavior_idx_end',
+                                              'behavior_win_len', 'raster_win_len', 'n_neurons', 'binsz_s', 'npz_path', 'row_index']]
         self.processed_data = None
         
     def create_moving_windows(self, window_size: int = 5, 
@@ -77,10 +79,10 @@ class TimeSeriesMLProcessor:
                         # Create detailed transition labels
                         if prev_state != current_state:
                             # Actual transition occurred
-                            if prev_state.lower() in ['wake', 'w'] and current_state.lower() in ['nrem', 'n']:
+                            if prev_state.lower() in ['wake', 'w'] and current_state.lower() in ['nrem', 'n', 'NREM']:
                                 row['transition_type'] = 'wake_to_nrem'
                                 row['transition_category'] = 'wake_to_nrem'
-                            elif prev_state.lower() in ['nrem', 'n'] and current_state.lower() in ['wake', 'w']:
+                            elif prev_state.lower() in ['nrem', 'n'] and current_state.lower() in ['wake', 'w', 'WAKE']:
                                 row['transition_type'] = 'nrem_to_wake'
                                 row['transition_category'] = 'nrem_to_wake'
                             else:
@@ -91,10 +93,10 @@ class TimeSeriesMLProcessor:
                             row['is_transition'] = 1
                         else:
                             # No transition - staying in same state
-                            if current_state.lower() in ['wake', 'w']:
+                            if current_state.lower() in ['wake', 'w', 'WAKE']:
                                 row['transition_type'] = 'stay_wake'
                                 row['transition_category'] = 'stay_wake'
-                            elif current_state.lower() in ['nrem', 'n']:
+                            elif current_state.lower() in ['nrem', 'n', 'NREM']:
                                 row['transition_type'] = 'stay_nrem'
                                 row['transition_category'] = 'stay_nrem'
                             else:
@@ -581,9 +583,9 @@ class TimeSeriesMLProcessor:
                         current_state = block_data.iloc[i]['state']
                         
                         if prev_state != current_state:
-                            if prev_state.lower() in ['wake', 'w'] and current_state.lower() in ['nrem', 'n']:
+                            if prev_state.lower() in ['wake', 'w'] and current_state.lower() in ['nrem', 'n', 'NREM']:
                                 transition_type = 'wake_to_nrem'
-                            elif prev_state.lower() in ['nrem', 'n'] and current_state.lower() in ['wake', 'w']:
+                            elif prev_state.lower() in ['nrem', 'n'] and current_state.lower() in ['wake', 'w', 'WAKE']:
                                 transition_type = 'nrem_to_wake'
                             else:
                                 transition_type = f'{prev_state}_to_{current_state}'
